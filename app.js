@@ -21,9 +21,8 @@ app.post('/', async (req, res) => {
 
     // print request body
     let body = req.body.body
-    let message = body.content || ''
+    let message = body.content.toLowerCase() || ''
 
-    if (message == 'Oi') { }
     if (body.type == 'image') {
         console.log('recebi uma imagem');
     }
@@ -36,6 +35,8 @@ app.post('/', async (req, res) => {
     const sender = body.from || '';
     let splitw = sender.indexOf('@');
     let number = sender.slice(0, splitw);
+    
+    
 
     if (
         message.includes('tudo bem?') ||
@@ -46,11 +47,11 @@ app.post('/', async (req, res) => {
         message.includes('Guilherme') ||
         message.includes('eai mano') ||
         message.includes('ei') ||
-        message.includes('ou')
+        message.includes('ou') ||
     ) {
         let data = {
             phone: number,
-            message: `Olá ${body.sender.pushname}, está é uma mensagem automatica enviada pelo meu bot, escolha uma das opçoes para prosseguir:
+            message: `Olá ${body.sender.pushname}, está é uma mensagem automatica enviada pelo GuiBot, escolha uma das opçoes para prosseguir:
             1 - falar comigo no meu numero pessoal,
             2 - deixar uma mensagem para ser encaminhada para meu numero pessoal( digite a opçao e deixe a mensagem na frente 2 - msg),
             3 - ir se foder se você for o ulisses`,
