@@ -5,10 +5,13 @@ const cors = require('cors');
 const bodyparser = require('body-parser');
 const app = server();
 const fs = require('fs');
+const config = require('config')
+const { verifyIsHello } = require('./service.js')
 
 app.use(cors());
 app.use(bodyparser({ limit: '50mb' }));
 app.post('/', async (req, res) => {
+
     if (req.body.mimetype == 'audio/ogg; codecs=opus') {
         const fileContents = new Buffer(req.body.body, 'base64');
         const filehash = req.body.filehash.replace('/', '');
@@ -28,26 +31,18 @@ app.post('/', async (req, res) => {
     }
 
     let isMyMessage = body.fromMe || false;
-    if (isMyMessage && body.notifyName == 'Guilherme Henrique') {
+    if (isMyMessage && body.notifyName == config.WebHook.admin.name) {
         console.log('my message: ', body.content);
     }
 
     const sender = body.from || '';
     let splitw = sender.indexOf('@');
     let number = sender.slice(0, splitw);
-    
-    
+
+
 
     if (
-        message.includes('tudo bem?') ||
-        message.includes('Oi') ||
-        message.includes('Eai') ||
-        message.includes('Fala mano') ||
-        message.includes('Bom dia') ||
-        message.includes('Guilherme') ||
-        message.includes('eai mano') ||
-        message.includes('ei') ||
-        message.includes('ou') ||
+        verifyIsHello(message)
     ) {
         let data = {
             phone: number,
@@ -72,7 +67,7 @@ app.post('/', async (req, res) => {
     if (message.includes('2')) {
 
         let data = {
-            phone: 5511950468718,
+            phone: config.WebHook.admin.number,
             message: message,
             isGroup: false
         };
@@ -132,6 +127,7 @@ app.post('/send-message', async (req, res) => {
     res.status(200).send(response);
 });
 
-app.listen(8080, () => {
-    console.log('server inciado na porta 8080');
+app.listen(config.WebHook.server.port || 8080, () => {
+    console.log('server iniciado na env de:', process.env.NODE_ENV)
+    console.log('server de webhook inicado na porta:', config.WebHook.server.port);
 });

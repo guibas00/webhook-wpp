@@ -1,0 +1,15 @@
+{
+  "WebHook":
+    {
+      "admin":{
+        "name": "Guilherme Henrique",
+        "number": 5511950468718
+      },
+      "server":{
+        "port": 8080
+      },
+      "messages": {
+        "hello": [ "oi", "eai", "tudo bem?", "bom dia", "ola", "olá", "preto", "eae", "parceiro"]
+       }
+    }
+}
