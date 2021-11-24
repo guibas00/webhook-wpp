@@ -37,13 +37,10 @@ app.post('/', async (req, res) => {
     message == message.toLowerCase()
     if (body.type == 'image') {
         console.log('recebi uma imagem');
-        res.status(200).send({})
+        return res.status(200).send({})
     }
 
     let isMyMessage = body.fromMe || false;
-    if (isMyMessage && body.notifyName == config.WebHook.admin.name) {
-        console.log('my message: ', body.content);
-    }
 
     const sender = body.from || '';
     let splitw = sender.indexOf('@');
