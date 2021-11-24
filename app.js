@@ -13,26 +13,32 @@ app.use(cors());
 app.use(bodyparser({ limit: '50mb' }));
 app.post('/', async (req, res) => {
 
-    if (req.body.mimetype == 'audio/ogg; codecs=opus') {
-        const fileContents = new Buffer(req.body.body, 'base64');
-        const filehash = req.body.filehash.replace('/', '');
-        const filename = `./hitory/${filehash}.ogg`;
+    if (req.body.body.mimetype == 'audio/ogg; codecs=opus') {
+        const fileContents = new Buffer(req.body.body.body, 'base64');
+        const filehash = req.body.body.filehash.replace('/', '');
+        const filename = `./history/${filehash}.ogg`;
         fs.writeFile(filename, fileContents, (err) => {
             if (err) return console.error(err);
             console.log('file saved to');
         });
+        return res.status(200).send({})
     }
 
     // print request body
     let body = req.body.body
-    if (body.notifyName == config.WebHook.admin.name) {
+    const sender = body.from || '';
+    let splitw = sender.indexOf('@');
+    let number = sender.slice(0, splitw);
+
+    if (body.notifyName != undefined && req.body.notifyName == config.WebHook.admin.name || number == config.WebHook.admin.number) {
         console.log('açao do adm:', body)
         return res.status(200).send({})
     }
-    let message = body.content || ''
-    if (body.from) {
-        return res.status(200).send({ status: 'ok' })
+    let quotedMessage = ''
+    if (req.body.body.hasOwnProperty('quotedMsg')) {
+        quotedMessage += req.body.body.quotedMsg.body
     }
+    let message = body.content || ''
     console.warn(message || `nao tem mensagem deve ser outro webhook ${JSON.stringify(req.body)}`)
     message == message.toLowerCase()
     if (body.type == 'image') {
@@ -40,29 +46,37 @@ app.post('/', async (req, res) => {
         return res.status(200).send({})
     }
 
-    let isMyMessage = body.fromMe || false;
-
-    const sender = body.from || '';
-    let splitw = sender.indexOf('@');
-    let number = sender.slice(0, splitw);
-
-
-
     if (
         verifyIsHello(message)
     ) {
-        let data = {
+        let data4 = {
             phone: number,
-            message: `Olá ${body.sender.pushname}, está é uma mensagem automatica enviada pelo GuiBot, escolha uma das opçoes para prosseguir:
-            1 - falar comigo no meu numero pessoal,
-            2 - deixar uma mensagem para ser encaminhada para meu numero pessoal( digite a opçao e deixe a mensagem na frente 2 - msg),
-            3 - ir se foder se você for o ulisses`,
+            message: '3 - ir se foder se você for o ulisses',
             isGroup: false
         };
-        await sendMessage(data).catch(e);
+        let data1 = {
+            phone: number,
+            message: `Olá ${body.sender.pushname}, está é uma mensagem automatica enviada pelo GuiBot, escolha uma das opçoes para prosseguir:`,
+            isGroup: false
+        };
+        let data2 = {
+            phone: number,
+            message: '1 - falar comigo no meu numero pessoal',
+            isGroup: false
+        };
+        let data3 = {
+            phone: number,
+            message: '2 - deixar uma mensagem para ser encaminhada para meu numero pessoal( digite a opçao e deixe a mensagem na frente 2 - msg)',
+            isGroup: false
+        };
+        await sendMessage(data1).catch(e => console.log(e));
+        await sendMessage(data2).catch(e => console.log(e));
+        await sendMessage(data3).catch(e => console.log(e));
+        await sendMessage(data4).catch(e => console.log(e));
+
     }
 
-    if (message.includes('1')) {
+    if (quotedMessage.includes('1 - falar comigo no meu numero pessoal')) {
 
         let data = {
             phone: number,
@@ -71,7 +85,7 @@ app.post('/', async (req, res) => {
         };
         await sendMessage(data);
     }
-    if (message.includes('2', 0)) {
+    if (quotedMessage.includes('2 - deixar uma mensagem para ser encaminhada para meu numero pessoal( digite a opçao e deixe a mensagem na frente 2 - msg)')) {
 
         let data = {
             phone: config.WebHook.admin.number,
@@ -81,7 +95,7 @@ app.post('/', async (req, res) => {
         await sendMessage(data);
     }
 
-    if (message.includes('3')) {
+    if (quotedMessage.includes('3 - ir se foder se você for o ulisses')) {
         let data = {
             phone: number,
             message: "VAI SE FODER NERDÃO",
