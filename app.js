@@ -6,7 +6,8 @@ const bodyparser = require('body-parser');
 const app = server();
 const fs = require('fs');
 const config = require('config')
-const { verifyIsHello } = require('./service.js')
+const { verifyIsHello } = require('./service.js');
+const { ok } = require('assert');
 
 app.use(cors());
 app.use(bodyparser({ limit: '50mb' }));
@@ -24,10 +25,19 @@ app.post('/', async (req, res) => {
 
     // print request body
     let body = req.body.body
-    let message = body.content.toLowerCase() || ''
-
+    if (body.notifyName == config.WebHook.admin.name) {
+        console.log('açao do adm:', body)
+        return res.status(200).send({})
+    }
+    let message = body.content || ''
+    if (body.from) {
+        return res.status(200).send({ status: 'ok' })
+    }
+    console.warn(message || `nao tem mensagem deve ser outro webhook ${JSON.stringify(req.body)}`)
+    message == message.toLowerCase()
     if (body.type == 'image') {
         console.log('recebi uma imagem');
+        res.status(200).send({})
     }
 
     let isMyMessage = body.fromMe || false;
@@ -52,7 +62,7 @@ app.post('/', async (req, res) => {
             3 - ir se foder se você for o ulisses`,
             isGroup: false
         };
-        await sendMessage(data);
+        await sendMessage(data).catch(e);
     }
 
     if (message.includes('1')) {
@@ -64,7 +74,7 @@ app.post('/', async (req, res) => {
         };
         await sendMessage(data);
     }
-    if (message.includes('2')) {
+    if (message.includes('2', 0)) {
 
         let data = {
             phone: config.WebHook.admin.number,
